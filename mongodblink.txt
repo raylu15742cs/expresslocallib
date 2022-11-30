@@ -1,0 +1,1 @@
+mongodb+srv://admin:Killerkill15742@cluster0.gospbni.mongodb.net/?retryWrites=true&w=majority
