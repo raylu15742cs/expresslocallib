@@ -10,6 +10,14 @@ var coolRouter = require('./routes/cool');
 
 var app = express();
 
+// Set up mongoose connection
+const mongoose = require("mongoose");
+const mongoDB = "insert_your_database_url_here";
+mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "MongoDB connection error:"));
+
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -40,15 +48,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-// Import the mongoose module
-const mongoose = require("mongoose");
 
-// Set up default mongoose connection
-const mongoDB = "mongodb://127.0.0.1/my_database";
-mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
-
-// Get the default connection
-const db = mongoose.connection;
 
 // Bind connection to error event (to get notification of connection errors)
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
