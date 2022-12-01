@@ -4,6 +4,6 @@ block content
     h1= title 
     ul
         each genre in genre_list    
-            li genre 
+            li= genre.name
         else 
             li there is no genre
