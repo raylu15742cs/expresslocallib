@@ -1,4 +1,5 @@
-const Genre = require("../models/genre")
+const { body, validationResult } = require('express-validator');
+const Genre = require('../models/genre');
 const Book = require('../models/book');
 const async = require('async');
 
@@ -35,20 +36,19 @@ exports.genre_detail = (req, res, next) => {
       }
       if (results.genre == null) {
         // No results.
-        const err = new Error("Genre not found");
+        const err = new Error('Genre not found');
         err.status = 404;
         return next(err);
       }
       // Successful, so render
-      res.render("genre_detail", {
-        title: "Genre Detail",
+      res.render('genre_detail', {
+        title: 'Genre Detail',
         genre: results.genre,
         genre_books: results.genre_books,
       });
     }
   );
 };
-
 
 // Display Genre create form on GET.
 exports.genre_create_get = (req, res) => {
