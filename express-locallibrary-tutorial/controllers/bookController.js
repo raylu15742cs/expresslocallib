@@ -234,6 +234,41 @@ exports.book_delete_post = (req, res) => {
   res.send('NOT IMPLEMENTED: Book delete POST');
 };
 
+exports.book_delete_post = (req, res) => {
+  async.parallel (
+    {
+      book(callback) {
+        Book.findById(req.params.id).exec(callback);
+      },
+      book_instance(callback){
+        BookInstance.find({book: req.params.id}).exec(callback);
+      },
+    },
+    (err, result) => {
+      if(err) {
+        return next(err)
+      }
+      //success
+      if(result.book_instance.length > 0) {
+        //Book has instances. Render same as get
+        res.render('book_delete', {
+          title: 'Delete Book',
+          book: result.book,
+          book_instance: result.book_instance,
+        });
+        return;
+      }
+      Book.findByIdAndRemove(req.body.bookid , (err)=> {
+        if (err) {
+          return next(err)
+        }
+        //success
+        res.redirect("/catalog/books");
+      })
+    }
+  )
+}
+
 // Display book update form on GET.
 exports.book_update_get = (req, res, next) => {
   // Get book, authors and genres for form.
