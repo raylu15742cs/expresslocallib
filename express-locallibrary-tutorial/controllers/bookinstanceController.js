@@ -45,9 +45,19 @@ exports.bookinstance_detail = (req, res, next) => {
 
 
 // Display BookInstance create form on GET.
-exports.bookinstance_create_get = (req, res) => {
-  res.send('NOT IMPLEMENTED: BookInstance create GET');
+exports.bookinstance_create_get = (req, res, next) => {
+  Book.find({}, "title").exec((err, books) => {
+    if (err) {
+      return next(err);
+    }
+    // Successful, so render.
+    res.render("bookinstance_form", {
+      title: "Create BookInstance",
+      book_list: books,
+    });
+  });
 };
+
 
 // Handle BookInstance create on POST.
 exports.bookinstance_create_post = (req, res) => {
