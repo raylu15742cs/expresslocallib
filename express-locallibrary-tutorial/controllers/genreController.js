@@ -111,14 +111,14 @@ exports.genre_delete_get = (req, res, next) => {
         Genre.findById(req.params.id).exec(callback)
       },
       genre_books(callback) {
-        Book.find({author: req.params.id}).exec(callback);
+        Book.find({genre: req.params.id}).exec(callback);
       },
     },
-    (err, result) => {
+    (err, results) => {
       if(err) {
         return next(err);
       }
-      if(result.genre == null ) {
+      if(results.genre == null ) {
         // No result
         res.redirect("/catalog/genres");
       }
@@ -141,7 +141,7 @@ exports.genre_delete_post = (req, res, next) => {
         Genre.findById(req.params.id).exec(callback)
       },
       genre_books(callback) {
-        Book.find({author: req.params.id}).exec(callback);
+        Book.find({genre: req.params.id}).exec(callback);
       },
     },
     (err , result ) => {
