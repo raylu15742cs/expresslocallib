@@ -55,9 +55,10 @@ exports.author_detail = (req, res, next) => {
 
 
 // Display Author create form on GET.
-exports.author_create_get = (req, res) => {
-  res.send('NOT IMPLEMENTED: Author create GET');
+exports.author_create_get = (req, res, next) => {
+  res.render("author_form", { title: "Create Author" });
 };
+
 
 // Handle Author create on POST.
 exports.author_create_post = (req, res) => {
