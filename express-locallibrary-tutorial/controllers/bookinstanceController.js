@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const Book = require('../models/book');
 const author = require('../models/author');
 const bookinstance = require('../models/bookinstance');
+const async = require('async');
 
 
 
@@ -140,7 +141,7 @@ exports.bookinstance_delete_get = (req , res , next ) => {
     //Successful , so render
     res.render("bookinstance_delete", {
       title : "Delete Instance",
-      Instance : results.bookinstance
+      bookinstance : results.bookinstance
     })
   }
   )
@@ -160,7 +161,7 @@ exports.bookinstance_delete_post = (req, res, next) => {
         return next(err);
       }
       //Delete Instance, and Redirect to Instances
-      BookInstance.findByIdAndRemove(req.body.bookinstnaceid, (err) => {
+      BookInstance.findByIdAndRemove(req.body.bookinstanceid, (err) => {
         if(err) {
           return next(err);
         }
