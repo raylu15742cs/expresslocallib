@@ -2,6 +2,7 @@ const BookInstance = require('../models/bookinstance');
 const { body, validationResult } = require('express-validator');
 const Book = require('../models/book');
 const async = require('async');
+const bookinstance = require('../models/bookinstance');
 
 
 
@@ -171,37 +172,20 @@ exports.bookinstance_delete_post = (req, res, next) => {
 };
 
 // Display BookInstance update form on GET.
-exports.bookinstance_update_get = (req, res) => {
-  res.send('NOT IMPLEMENTED: BookInstance update GET');
-};
 exports.bookinstance_update_get = (req , res , next) => {
-  async.parallel({
-    bookinstance(callback) {
-      BookInstance.findById(req.params.id)
-    },
-  },
-  (err,results) => {
-    if(err) {
-      return next(err)
+  Book.find({}, "title").exec((err, books) => {
+    if (err) {
+      return next(err);
     }
-    if(results.bookinstance == null) {
-      //no reuslt.
-      const err = new Error ("Book Instance Not Found")
-      err.status = 404;
-      return next(err)
-    }
+    // Successful, so render.
     res.render("bookinstance_form", {
-      title: "Update Book Instnace",
-      bookinstance: results.instance
-    })
-    }
-  )
-}
+      title: "Update BookInstance",
+      book_list: books,
+    });
+  });
+};
 
 // Handle bookinstance update on POST.
-exports.bookinstance_update_post = (req, res) => {
-  res.send('NOT IMPLEMENTED: BookInstance update POST');
-};
 exports.bookinstance_update_post = [
   (req, res, next) => {
     if (!Array.isArray(req.body.genre)) {
@@ -212,17 +196,63 @@ exports.bookinstance_update_post = [
   },
 
   // Validate and sanitize fields.
-  body('Book', 'Title must not be empty.').trim().isLength({ min: 1 }).escape(),
-  body('Imprint', 'Imprint must not be empty.')
+  body('book', 'Title must not be empty.').trim().isLength({ min: 1 }).escape(),
+  body('imprint', 'Imprint must not be empty.')
     .trim()
     .isLength({ min: 1 })
     .escape(),
-  body('Date', 'Date must not be empty.').trim().isLength({ min: 1 }).escape(),
-  body('Status', 'Status must not be empty.').trim().isLength({ min: 1 }).escape(),
+  body('date', 'Date must not be empty.').trim().isLength({ min: 1 }).escape(),
+  body('status', 'Status must not be empty.').trim().isLength({ min: 1 }).escape(),
 
   // Process request after validation and sanitization
   (req , res , next ) => {
     //Extract the validation errors from a request
     const errors = validationResult(req);
+
+    const bookinstance = new BookInstance({
+      book: req.body.book,
+      imprint: req.body.imprint,
+      date: req.body.date,
+      status: req.body.status,
+      _id: req.params.id, // required so new id is not assigned
+    });
+
+    if (!errors.isEmpty()) {
+      // Error Render form again with sanitized values / error messages
+
+      // Get info for forms
+      async.parallel(
+        {
+          bookinstance(callback) {
+            BookInstance.findById(req.params.id).exec(callback);
+          },
+        },
+        (err, results) => {
+          if (err) {
+            return next(err);
+          }
+          res.render('bookinstance_form', {
+            title: 'Update Book Instance',
+            bookinstance,
+            errors: errors.array(),
+          });
+        }
+      );
+      return;
+    }
+    // Data from form is valid. Update the record
+    BookInstance.findByIdAndUpdate(
+      req.params.id,
+      bookinstance,
+      {},
+      (err, thebookinsntance) => {
+        if (err) {
+          return next(err);
+        }
+
+        //success: redirect to book instance detail page
+        res.redirect(thebookinsntance.url);
+      }
+    );
   }
 ];
