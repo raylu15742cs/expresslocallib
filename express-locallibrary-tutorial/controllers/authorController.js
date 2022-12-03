@@ -187,7 +187,19 @@ exports.author_delete_post = (req, res, next) => {
 
 // Display Author update form on GET.
 exports.author_update_get = (req, res, next) => {
-  res.render("author_form", { title: "Update Author" });
+  async.parallel(
+    {
+      author(callback){
+        Author.findById(req.params.id).exec(callback)
+      }
+    },
+  (err,results) => {
+    if(err) {
+      return next(err)
+    }
+    res.render("author_form", { title: "Update Author" , author: results.author });
+  }
+  )
 };
 
 
@@ -224,7 +236,7 @@ exports.author_update_post = [
     if (!errors.isEmpty()) {
       // There are errors. Render form again with sanitized values/errors messages.
       res.render('author_form', {
-        title: 'Create Author',
+        title: 'Update Author',
         author: req.body,
         errors: errors.array(),
         
