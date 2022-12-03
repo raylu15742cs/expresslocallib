@@ -2,7 +2,6 @@ const BookInstance = require('../models/bookinstance');
 const { body, validationResult } = require('express-validator');
 const Book = require('../models/book');
 const async = require('async');
-const bookinstance = require('../models/bookinstance');
 
 
 
@@ -187,72 +186,56 @@ exports.bookinstance_update_get = (req , res , next) => {
 
 // Handle bookinstance update on POST.
 exports.bookinstance_update_post = [
-  (req, res, next) => {
-    if (!Array.isArray(req.body.genre)) {
-      req.body.genre =
-        typeof req.body.genre === 'undefined' ? [] : [req.body.genre];
-    }
-    next();
-  },
-
   // Validate and sanitize fields.
-  body('book', 'Title must not be empty.').trim().isLength({ min: 1 }).escape(),
-  body('imprint', 'Imprint must not be empty.')
+  body("book", "Book must be specified").trim().isLength({ min: 1 }).escape(),
+  body("imprint", "Imprint must be specified")
     .trim()
     .isLength({ min: 1 })
     .escape(),
-  body('date', 'Date must not be empty.').trim().isLength({ min: 1 }).escape(),
-  body('status', 'Status must not be empty.').trim().isLength({ min: 1 }).escape(),
+  body("status").escape(),
+  body("due_back", "Invalid date")
+    .optional({ checkFalsy: true })
+    .isISO8601()
+    .toDate(),
 
-  // Process request after validation and sanitization
-  (req , res , next ) => {
-    //Extract the validation errors from a request
+  // Process request after validation and sanitization.
+  (req, res, next) => {
+    // Extract the validation errors from a request.
     const errors = validationResult(req);
 
+    // Create a BookInstance object with escaped and trimmed data.
     const bookinstance = new BookInstance({
       book: req.body.book,
       imprint: req.body.imprint,
-      date: req.body.date,
       status: req.body.status,
-      _id: req.params.id, // required so new id is not assigned
+      due_back: req.body.due_back,
+      _id: req.params.id, //This is required, or a new ID will be assigned!
     });
 
     if (!errors.isEmpty()) {
-      // Error Render form again with sanitized values / error messages
-
-      // Get info for forms
-      async.parallel(
-        {
-          bookinstance(callback) {
-            BookInstance.findById(req.params.id).exec(callback);
-          },
-        },
-        (err, results) => {
-          if (err) {
-            return next(err);
-          }
-          res.render('bookinstance_form', {
-            title: 'Update Book Instance',
-            bookinstance,
-            errors: errors.array(),
-          });
-        }
-      );
-      return;
-    }
-    // Data from form is valid. Update the record
-    BookInstance.findByIdAndUpdate(
-      req.params.id,
-      bookinstance,
-      {},
-      (err, thebookinsntance) => {
+      // There are errors. Render form again with sanitized values and error messages.
+      Book.find({}, "title").exec(function (err, books) {
         if (err) {
           return next(err);
         }
+        // Successful, so render.
+        res.render("bookinstance_form", {
+          title: "Update BookInstance",
+          book_list: books,
+          errors: errors.array(),
+          bookinstance,
+        });
+      });
+      return;
+    }
 
-        //success: redirect to book instance detail page
-        res.redirect(thebookinsntance.url);
+    // Data from form is valid.
+    BookInstance.findByIdAndUpdate(req.params.id, bookinstance, {}, (err,thebookinstance) => {
+      if (err) {
+        return next(err);
       }
-    );
-  }
+      // Successful: redirect to new record.
+      res.redirect(thebookinstance.url);
+    });
+  },
 ];
