@@ -202,3 +202,27 @@ exports.bookinstance_update_get = (req , res , next) => {
 exports.bookinstance_update_post = (req, res) => {
   res.send('NOT IMPLEMENTED: BookInstance update POST');
 };
+exports.bookinstance_update_post = [
+  (req, res, next) => {
+    if (!Array.isArray(req.body.genre)) {
+      req.body.genre =
+        typeof req.body.genre === 'undefined' ? [] : [req.body.genre];
+    }
+    next();
+  },
+
+  // Validate and sanitize fields.
+  body('Book', 'Title must not be empty.').trim().isLength({ min: 1 }).escape(),
+  body('Imprint', 'Imprint must not be empty.')
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body('Date', 'Date must not be empty.').trim().isLength({ min: 1 }).escape(),
+  body('Status', 'Status must not be empty.').trim().isLength({ min: 1 }).escape(),
+
+  // Process request after validation and sanitization
+  (req , res , next ) => {
+    //Extract the validation errors from a request
+    const errors = validationResult(req);
+  }
+];
