@@ -186,7 +186,7 @@ exports.genre_update_post = [
     const errors = validationResult(req);
 
     // Create a genre object with escaped and trimmed data.
-    const genre = new Genre({ name: req.body.name });
+    const genre = new Genre({ name: req.body.name, _id: req.params.id });
 
     if (!errors.isEmpty()) {
       // There are errors. Render the form again with sanitized values/error messages.
@@ -208,12 +208,12 @@ exports.genre_update_post = [
           // Genre exists, redirect to its detail page.
           res.redirect(found_genre.url);
         } else {
-          genre.findByIdAndUpdate(req.params.id, genre , {}, (err, thegenre) => {
+          Genre.findByIdAndUpdate(req.params.id, genre , {}, (err, genre) => {
             if (err) {
               return next(err);
             }
             // Genre saved. Redirect to genre detail page.
-            res.redirect(thegenre.url);
+            res.redirect(genre.url);
           });
         }
       });
